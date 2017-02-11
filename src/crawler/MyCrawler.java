@@ -95,20 +95,16 @@ public class MyCrawler extends WebCrawler {
 	else
 		PageStatistics.contentSizeMap.put(contentRange,1);
 	PageStatistics.uniqueContentType.add(contentType);
-	System.out.println("URL: "+url);	
+	Set<WebURL> links = new HashSet<WebURL>();
+	//System.out.println("URL: "+url);	
 		if(page.getParseData() instanceof HtmlParseData) {
-			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
-			String text = htmlParseData.getText();
-			String html = htmlParseData.getHtml();
-			Set<WebURL> links =	htmlParseData.getOutgoingUrls();
-			fileHandlerVisited.writeLine(writerVisited,
-					new String[]{url,pageSize,""+links.size(),contentType});		
-			FetchStatistics.fetchSucessful++;
-			/*System.out.println("Text length: "+text.length());
-			System.out.println("Html length: "+html.length());
-			System.out.println("Number of outgoing links: "	+ links.size());*/
-			}
+			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();			
+			links =	htmlParseData.getOutgoingUrls();			
 		}
+	fileHandlerVisited.writeLine(writerVisited,
+			new String[]{url,pageSize,""+links.size(),contentType});
+	FetchStatistics.fetchSucessful++;
+	}
 	
 	@Override
 	 protected void handlePageStatusCode(WebURL webUrl, int statusCode, String statusDescription) {
@@ -126,7 +122,7 @@ public class MyCrawler extends WebCrawler {
 		// TODO Auto-generated method stub
 		super.onBeforeExit();
 		if(!completedCrawling){
-			completedCrawling =true;
+			//completedCrawling =true;
 			System.out.println("Fetches attempted " + FetchStatistics.fetchAttempted);
 			System.out.println("Fetches succeeded " + FetchStatistics.fetchSucessful);
 			System.out.println("Fetches failed or aborted " + FetchStatistics.fetchfailed);
