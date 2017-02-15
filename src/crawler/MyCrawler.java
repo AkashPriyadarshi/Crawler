@@ -32,8 +32,8 @@ class PageStatistics {
 public class MyCrawler extends WebCrawler {
 	private	final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|mp3|mp3|zip|gz|xml|ashx))$");
 	private final String[] allowedDomain = new String[]{"http://www.nbcnews.com/","http://nbcnews.com/",
-														"https://www.nbcnews.com/","https://nbcnews.com/"}; 
-	
+			"https://www.nbcnews.com/","https://nbcnews.com/"}; 
+
 	private final String ok_indicator = "OK";
 	private final String not_ok_indicator = "N_OK";
 	
