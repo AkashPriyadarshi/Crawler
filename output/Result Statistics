@@ -1,0 +1,22 @@
+Fetches attempted 19992
+Fetches succeeded 19109
+Fetches failed or aborted 882
+Total URLs extracted 802436
+Unique URLs extracted 212149
+Unique URLs extracted within website 42118
+Unique URLs extracted outside website 170031
+Different Status codes: 
+302
+404
+301
+200
+502
+Different content types: 
+text/css
+text/html
+Different content sizes: 
+>1MB : 41
+10KB ~ <100KB : 10825
+<1KB : 1
+1KB ~ <10KB : 7
+100KB ~ <1MB : 8234

@@ -26,9 +26,9 @@ public class Controller {
 		 * which are found in these pages
 		*/
 		controller.addSeed("http://www.nbcnews.com/");
-		config.setMaxPagesToFetch(1000);
+		config.setMaxPagesToFetch(20);
 		config.setMaxDepthOfCrawling(16);
-		config.setPolitenessDelay(200);
+		config.setPolitenessDelay(400);
 		/*
 		* Start the crawl. This is a blocking operation, meaning that your code
 		* will reach the line after this only when crawling is finished.

@@ -14,7 +14,8 @@ import edu.uci.ics.crawler4j.url.WebURL;
 class FetchStatistics {
 	static int fetchAttempted = 0;
 	static int fetchSucessful = 0;
-	static int fetchfailed = 0;	  
+	static int fetchfailed = 0;	
+	static int fetchAborted = 0;	
 }
 class URLStatistics {
 	static int totalUrlsExtracted = 0;
@@ -23,15 +24,16 @@ class URLStatistics {
 	static Set<String> uniqueOutside = new HashSet<String>();	
 }
 class PageStatistics {	
-	static Set<String> uniqueStatusCode = new HashSet<String>();
-	static Set<String> uniqueContentType = new HashSet<String>();
+	static HashMap<String,Integer> uniqueStatusCode = new HashMap<String,Integer>();
+	static HashMap<String,Integer> uniqueContentType = new HashMap<String,Integer>();
 	static HashMap<String,Integer> contentSizeMap = new HashMap<String,Integer>();
 }
 
 public class MyCrawler extends WebCrawler {
-	private	final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|gif|jpg"
-														+"|png|mp3|mp3|zip|gz|xml|ashx))$");
-	private final String allowedDomain = "http://www.nbcnews.com/"; 
+	private	final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|mp3|mp3|zip|gz|xml|ashx))$");
+	private final String[] allowedDomain = new String[]
+											{"http://www.nbcnews.com/","http://nbcnews.com/",
+											 "https://www.nbcnews.com/","https://nbcnews.com/"}; 
 	
 	private final String ok_indicator = "OK";
 	private final String not_ok_indicator = "N_OK";
@@ -72,7 +74,14 @@ public class MyCrawler extends WebCrawler {
 		//System.out.println("URL: "+href);
 		URLStatistics.totalUrlsExtracted++;
 		URLStatistics.totalUniqueUrls.add(href);
-		boolean shouldVisit =!FILTERS.matcher(href).matches() && href.startsWith(allowedDomain);
+		boolean shouldVisit =!FILTERS.matcher(href).matches();
+		if(shouldVisit){
+			for(String domain : allowedDomain)
+			{
+				shouldVisit = href.startsWith(domain);
+				if(shouldVisit)break;
+			}
+		}	
 		String urlInDomain = shouldVisit? ok_indicator:not_ok_indicator;
 		if(shouldVisit)URLStatistics.uniqueWithin.add(href);
 		else URLStatistics.uniqueOutside.add(href);
@@ -93,8 +102,13 @@ public class MyCrawler extends WebCrawler {
 	if (PageStatistics.contentSizeMap.containsKey(contentRange))
 		PageStatistics.contentSizeMap.put(contentRange,	PageStatistics.contentSizeMap.get(contentRange) + 1);
 	else
-		PageStatistics.contentSizeMap.put(contentRange,1);
-	PageStatistics.uniqueContentType.add(contentType);
+		PageStatistics.contentSizeMap.put(contentRange,1);	
+	if(PageStatistics.uniqueContentType.containsKey(contentType))
+    	PageStatistics.uniqueContentType.put(contentType,
+    			PageStatistics.uniqueContentType.get(contentType)+1);
+    else 
+    	PageStatistics.uniqueContentType.put(contentType+"",1);
+	
 	Set<WebURL> links = new HashSet<WebURL>();
 	//System.out.println("URL: "+url);	
 		if(page.getParseData() instanceof HtmlParseData) {
@@ -102,8 +116,7 @@ public class MyCrawler extends WebCrawler {
 			links =	htmlParseData.getOutgoingUrls();			
 		}
 	fileHandlerVisited.writeLine(writerVisited,
-			new String[]{url,pageSize,""+links.size(),contentType});
-	FetchStatistics.fetchSucessful++;
+			new String[]{url,pageSize,""+links.size(),contentType});	
 	}
 	
 	@Override
@@ -113,9 +126,14 @@ public class MyCrawler extends WebCrawler {
 	        fileHandlerFetched.writeLine(writerFetched, new String[]{webUrl.toString(),
 	        														 ""+statusCode});
 	        FetchStatistics.fetchAttempted++;
-	        PageStatistics.uniqueStatusCode.add(statusCode+"");
-	        if(statusCode>=300)
-	        	FetchStatistics.fetchfailed++;   
+	        if(PageStatistics.uniqueStatusCode.containsKey(statusCode+""))
+	        	PageStatistics.uniqueStatusCode.put(statusCode+"",
+	        			PageStatistics.uniqueStatusCode.get(statusCode+"")+1);
+	        else 
+	        	PageStatistics.uniqueStatusCode.put(statusCode+"",1);
+	        if(statusCode == 308)FetchStatistics.fetchAborted++;
+	        else if(statusCode>=300)FetchStatistics.fetchfailed++;   
+	        else FetchStatistics.fetchSucessful++;
 	}
 	@Override
 	public void onBeforeExit() {
@@ -123,27 +141,35 @@ public class MyCrawler extends WebCrawler {
 		super.onBeforeExit();
 		if(!completedCrawling){
 			//completedCrawling =true;
-			System.out.println("Fetches attempted " + FetchStatistics.fetchAttempted);
-			System.out.println("Fetches succeeded " + FetchStatistics.fetchSucessful);
-			System.out.println("Fetches failed or aborted " + FetchStatistics.fetchfailed);
+			System.out.println("Fetch Statistics");
+			System.out.println("================");
+			System.out.println("# Fetches attempted: " + FetchStatistics.fetchAttempted);
+			System.out.println("# Fetches succeeded: " + FetchStatistics.fetchSucessful);
+			System.out.println("# Fetches failed   : " + FetchStatistics.fetchfailed);
+			System.out.println("# Fetches aborted  : " + FetchStatistics.fetchAborted);			 
 			
+			System.out.println("Outgoing URLs:");
+			System.out.println("===============");
+			System.out.println("Total URLs extracted  : " + URLStatistics.totalUrlsExtracted);
+			System.out.println("#Unique URLs extracted: "+ URLStatistics.totalUniqueUrls.size());
+			System.out.println("#Unique URLs extracted within website : " + URLStatistics.uniqueWithin.size());
+			System.out.println("#Unique URLs extracted outside website: " + URLStatistics.uniqueOutside.size());
 			
-			System.out.println("Total URLs extracted " + URLStatistics.totalUrlsExtracted);
-			System.out.println("Unique URLs extracted "+ URLStatistics.totalUniqueUrls.size());
-			System.out.println("Unique URLs extracted within website " + URLStatistics.uniqueWithin.size());
-			System.out.println("Unique URLs extracted outside website " + URLStatistics.uniqueOutside.size());
+			System.out.println("Status Codes:");
+			System.out.println("==============");			
+			for(String elem : PageStatistics.uniqueStatusCode.keySet())
+				System.out.println(elem+" : "+PageStatistics.uniqueStatusCode.get(elem));
 			
-			System.out.println("Different Status codes: ");
-			for(String elem : PageStatistics.uniqueStatusCode)
-				System.out.println(elem);
-			
-			System.out.println("Different content types: ");
-			for(String elem : PageStatistics.uniqueContentType)
-				System.out.println(elem);		
-			
-			System.out.println("Different content sizes: ");
+			System.out.println("File Sizes: ");
+			System.out.println("=============");
 			for(String elem : PageStatistics.contentSizeMap.keySet())
 				System.out.println(elem+" : "+PageStatistics.contentSizeMap.get(elem));
+			
+			System.out.println("Content Types:");
+			System.out.println("==============");			
+			for(String elem : PageStatistics.uniqueContentType.keySet())
+				System.out.println(elem+" : "+PageStatistics.uniqueContentType.get(elem) );		
+			
 		}
 		
 		fileHandlerURL.closeFileHandler();
