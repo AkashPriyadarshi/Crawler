@@ -64,8 +64,9 @@ public class FileHandler {
         w.append(tempString.toString());
     }
     private String followCVSformat(String value) {        
-        if (value.contains("\"")) return value.replace("\"", "\"\"");        
-        else return value;
+        if (value.contains("\"")) value=  value.replace("\"", "\"\"");
+        if (value.contains(",")) value =  value.replace(",", "-");
+        return value;
     }
     
     public File getFile(){

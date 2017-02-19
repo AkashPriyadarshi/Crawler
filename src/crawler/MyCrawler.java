@@ -73,7 +73,7 @@ public class MyCrawler extends WebCrawler {
 		//System.out.println("URL: "+href);
 		URLStatistics.totalUrlsExtracted++;
 		URLStatistics.totalUniqueUrls.add(href);
-		boolean shouldVisit =!FILTERS.matcher(href).matches();
+		boolean shouldVisit =!(FILTERS.matcher(href).matches() || href.contains(".ashx"));
 		if(shouldVisit){
 			for(String domain : allowedDomain)
 			{
@@ -130,8 +130,8 @@ public class MyCrawler extends WebCrawler {
 	        			PageStatistics.uniqueStatusCode.get(statusCode+"")+1);
 	        else 
 	        	PageStatistics.uniqueStatusCode.put(statusCode+"",1);
-	        if(statusCode == 308)FetchStatistics.fetchAborted++;
-	        else if(statusCode>=300)FetchStatistics.fetchfailed++;   
+	        if(statusCode>=400)FetchStatistics.fetchfailed++;   
+	        else if(statusCode>=300)FetchStatistics.fetchAborted++;
 	        else FetchStatistics.fetchSucessful++;
 	}
 	@Override
