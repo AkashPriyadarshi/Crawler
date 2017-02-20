@@ -128,14 +128,16 @@ public class MyCrawler extends WebCrawler {
 	        fileHandlerFetched.writeLine(writerFetched, new String[]{webUrl.toString(),
 	        														 ""+statusCode});
 	        FetchStatistics.fetchAttempted++;
+	        if(statusCode>=400)FetchStatistics.fetchfailed++;   
+	        else if(statusCode>=300)FetchStatistics.fetchAborted++;
+	        else FetchStatistics.fetchSucessful++;
+	        
 	        if(PageStatistics.uniqueStatusCode.containsKey(statusCode+""))
 	        	PageStatistics.uniqueStatusCode.put(statusCode+"",
 	        			PageStatistics.uniqueStatusCode.get(statusCode+"")+1);
 	        else 
 	        	PageStatistics.uniqueStatusCode.put(statusCode+"",1);
-	        if(statusCode>=400)FetchStatistics.fetchfailed++;   
-	        else if(statusCode>=300)FetchStatistics.fetchAborted++;
-	        else FetchStatistics.fetchSucessful++;
+	        
 	}
 	@Override
 	public void onBeforeExit() {

@@ -15,6 +15,10 @@ public class Controller {
 		CrawlConfig config = new CrawlConfig();
 		
 		config.setCrawlStorageFolder(crawlStorageFolder);
+		config.setMaxPagesToFetch(1000);
+		config.setMaxDepthOfCrawling(16);
+		config.setPolitenessDelay(500);
+		config.setIncludeBinaryContentInCrawling(true);
 		
 		/** Instantiate the controller for this crawl.*/
 		PageFetcher pageFetcher =	new	PageFetcher(config);
@@ -25,11 +29,8 @@ public class Controller {
 		 *  URLs that are fetched and then the crawler starts following links
 		 * which are found in these pages
 		*/
-		controller.addSeed("http://www.nbcnews.com/");
-		config.setMaxPagesToFetch(2000);
-		config.setMaxDepthOfCrawling(16);
-		config.setPolitenessDelay(500);
-		config.setIncludeBinaryContentInCrawling(true);
+		controller.addSeed("http://www.nbcnews.com/");	
+		
 		/*
 		* Start the crawl. This is a blocking operation, meaning that your code
 		* will reach the line after this only when crawling is finished.
