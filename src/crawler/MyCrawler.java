@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
+import edu.uci.ics.crawler4j.parser.BinaryParseData;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
 
@@ -112,10 +113,12 @@ public class MyCrawler extends WebCrawler {
 	//System.out.println("URL: "+url);	
 		if(page.getParseData() instanceof HtmlParseData) {
 			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();			
-			links =	htmlParseData.getOutgoingUrls();			
-		}
-	fileHandlerVisited.writeLine(writerVisited,
-			new String[]{url,pageSize,""+links.size(),contentType});	
+			links =	htmlParseData.getOutgoingUrls();		
+			fileHandlerVisited.writeLine(writerVisited,
+					new String[]{url,pageSize,""+links.size(),contentType});
+		}else if(page.getParseData() instanceof BinaryParseData){
+			fileHandlerVisited.writeLine(writerVisited, new String[]{url,pageSize,"0",contentType});
+		}	
 	}
 	
 	@Override
